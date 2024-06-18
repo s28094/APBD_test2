@@ -2,50 +2,71 @@
 using APBD_test2.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace APBD_test2.Repositories;
-
-public class BookRepository : IBookRepository
+namespace APBD_test2.Repositories
 {
-    private readonly LibraryContext _context;
-
-    public BookRepository(LibraryContext context)
+    public class BookRepository : IBookRepository
     {
-        _context = context;
-    }
+        private readonly LibraryContext _context;
 
-    public async Task<IEnumerable<Book>> GetAllBooksAsync(DateTime? releaseDate = null)
-    {
-        var query = _context.Books
-            .Include(b => b.PublishingHouse)
-            .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
-            .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
-            .AsQueryable();
-
-        if (releaseDate.HasValue)
+        public BookRepository(LibraryContext context)
         {
-            query = query.Where(b => b.ReleaseDate == releaseDate.Value);
+            _context = context;
         }
 
-        return await query
-            .OrderByDescending(b => b.ReleaseDate)
-            .ThenBy(b => b.PublishingHouse.Name)
-            .ToListAsync();
-    }
+        public async Task<IEnumerable<Book>> GetAllBooksAsync(DateTime? releaseDate)
+        {
+            if (releaseDate.HasValue)
+            {
+                return await _context.Books
+                    .Where(b => b.ReleaseDate == releaseDate.Value)
+                    .Include(b => b.PublishingHouse)
+                    .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
+                    .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                    .ToListAsync();
+            }
+            return await _context.Books
+                .Include(b => b.PublishingHouse)
+                .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
+                .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                .ToListAsync();
+        }
 
-    public async Task AddBookAsync(Book book)
-    {
-        _context.Books.Add(book);
-        await _context.SaveChangesAsync();
-    }
+        public async Task<Book> GetBookAsync(int id)
+        {
+            return await _context.Books
+                .Include(b => b.PublishingHouse)
+                .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
+                .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
+                .FirstOrDefaultAsync(b => b.Id == id);
+        }
 
-    public async Task<PublishingHouse> GetPublishingHouseAsync(int id)
-    {
-        return await _context.PublishingHouses.FindAsync(id);
-    }
+        public async Task<PublishingHouse> GetPublishingHouseAsync(int id)
+        {
+            return await _context.PublishingHouses.FindAsync(id);
+        }
 
-    public async Task AddPublishingHouseAsync(PublishingHouse publishingHouse)
-    {
-        _context.PublishingHouses.Add(publishingHouse);
-        await _context.SaveChangesAsync();
+        public async Task AddBookAsync(Book book)
+        {
+            _context.Books.Add(book);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddPublishingHouseAsync(PublishingHouse publishingHouse)
+        {
+            _context.PublishingHouses.Add(publishingHouse);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddBookAuthorAsync(BookAuthor bookAuthor)
+        {
+            _context.BookAuthors.Add(bookAuthor);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task AddBookGenreAsync(BookGenre bookGenre)
+        {
+            _context.BookGenres.Add(bookGenre);
+            await _context.SaveChangesAsync();
+        }
     }
 }
