@@ -7,6 +7,6 @@ public class Book
     public DateTime ReleaseDate { get; set; }
     public int PublishingHouseId { get; set; }
     public PublishingHouse PublishingHouse { get; set; }
-    public ICollection<BookAuthor> BookAuthors { get; set; }
+    public ICollection<Author> BookAuthors { get; set; }
     public ICollection<BookGenre> BookGenres { get; set; }
 }

@@ -20,13 +20,13 @@ namespace APBD_test2.Repositories
                 return await _context.Books
                     .Where(b => b.ReleaseDate == releaseDate.Value)
                     .Include(b => b.PublishingHouse)
-                    .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
+                    .Include(b => b.BookAuthors)
                     .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
                     .ToListAsync();
             }
             return await _context.Books
                 .Include(b => b.PublishingHouse)
-                .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
+                .Include(b => b.BookAuthors)
                 .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
                 .ToListAsync();
         }
@@ -35,7 +35,7 @@ namespace APBD_test2.Repositories
         {
             return await _context.Books
                 .Include(b => b.PublishingHouse)
-                .Include(b => b.BookAuthors).ThenInclude(ba => ba.Author)
+                .Include(b => b.BookAuthors)
                 .Include(b => b.BookGenres).ThenInclude(bg => bg.Genre)
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
@@ -59,7 +59,9 @@ namespace APBD_test2.Repositories
 
         public async Task AddBookAuthorAsync(BookAuthor bookAuthor)
         {
-            _context.BookAuthors.Add(bookAuthor);
+            var book = _context.Books.Find(bookAuthor.BookId);
+            var author = _context.Authors.Find(bookAuthor.AuthorId);
+            book.BookAuthors.Add(author);
             await _context.SaveChangesAsync();
         }
 
